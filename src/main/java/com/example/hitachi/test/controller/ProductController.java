@@ -5,7 +5,6 @@ import com.example.hitachi.test.dto.ProductRequest;
 import com.example.hitachi.test.dto.ProductResponse;
 import com.example.hitachi.test.dto.TaxResponse;
 import com.example.hitachi.test.entity.Product;
-import com.example.hitachi.test.entity.Tax;
 import com.example.hitachi.test.service.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
