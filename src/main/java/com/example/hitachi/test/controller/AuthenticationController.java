@@ -44,7 +44,10 @@ public class AuthenticationController {
                 registeredUser.getId(),
                 registeredUser.getUsername(),
                 registeredUser.getEmail(),
-                registeredUser.getRoles()
+                registeredUser.isSuspended(),
+                registeredUser.getRoles(),
+                registeredUser.getCreatedAt(),
+                registeredUser.getUpdatedAt()
         );
         return ResponseEntity.ok(new ApiResponse<>(true, "User registered successfully", userResponse));
     }
@@ -76,7 +79,10 @@ public class AuthenticationController {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                currentRoles
+                user.isSuspended(),
+                currentRoles,
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
         return ResponseEntity.ok(new ApiResponse<>(true, "User data retrieved successfully", userResponse));
     }
