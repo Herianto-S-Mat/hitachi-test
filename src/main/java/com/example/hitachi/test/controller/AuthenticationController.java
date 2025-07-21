@@ -19,8 +19,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import com.example.hitachi.test.exception.UserAlreadyExistsException;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.example.hitachi.test.entity.Role;
+import java.util.stream.Collectors;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -52,14 +57,26 @@ public class AuthenticationController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Login successful", jwtAuthResponse));
     }
 
+
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(@AuthenticationPrincipal User user) {
+        // Get roles from the SecurityContextHolder, which includes dynamically added roles
+        Set<Role> currentRoles = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(authority -> {
+                    Role role = new Role();
+                    role.setName(authority.getAuthority());
+                    // Note: Role ID is not available from GrantedAuthority, so it will be null or default
+                    System.out.println("aaaaaaaaaaaaaaaa  bbbbbbbbb" +role.getName());
+                    return role;
+                })
+                .collect(Collectors.toSet());
+
         UserResponse userResponse = new UserResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRoles()
+                currentRoles
         );
         return ResponseEntity.ok(new ApiResponse<>(true, "User data retrieved successfully", userResponse));
     }

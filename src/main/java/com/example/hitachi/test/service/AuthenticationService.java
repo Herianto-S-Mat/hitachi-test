@@ -8,6 +8,7 @@ import com.example.hitachi.test.entity.User;
 import com.example.hitachi.test.repository.RoleRepository;
 import com.example.hitachi.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,9 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    @Value("${superadmin.secret-key}")
+    private String superAdminSecretKey;
 
     public User register(RegisterRequest request) {
         // Check if user already exists
@@ -67,6 +71,18 @@ public class AuthenticationService {
         User user = userRepository.findByUsername(request.getUsernameOrEmail())
                 .orElseGet(() -> userRepository.findByEmail(request.getUsernameOrEmail())
                         .orElseThrow(() -> new RuntimeException("User not found")));
+
+        // Check for superadmin secret key and if the user has ROLE_ADMIN
+        if (request.getSuperAdminSecretKey() != null && request.getSuperAdminSecretKey().equals(superAdminSecretKey) &&
+            user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"))) {
+            Role superAdminRole = roleRepository.findByName("ROLE_SUPER_ADMIN")
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setName("ROLE_SUPER_ADMIN");
+                        return roleRepository.save(newRole);
+                    });
+            user.getRoles().add(superAdminRole);
+        }
 
         String jwtToken = jwtService.generateToken(user);
         return JwtAuthResponse.builder()

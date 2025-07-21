@@ -17,4 +17,7 @@ public class LoginRequest {
     @NotBlank(message = "Password cannot be empty")
     @Schema(example = "password123")
     private String password;
+
+    @Schema(example = "superadmin_secret_key", description = "Optional: Provide superadmin secret key for elevated privileges")
+    private String superAdminSecretKey;
 }
