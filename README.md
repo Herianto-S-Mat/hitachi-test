@@ -71,6 +71,8 @@ The application will start on `http://localhost:8080`.
 
 ## API Endpoints
 
+### Authentication Endpoints
+
 ### Base URL
 
 `http://localhost:8080/api/v1/auth`
@@ -96,12 +98,15 @@ The application will start on `http://localhost:8080`.
         "id": 1,
         "username": "testuser",
         "email": "test@example.com",
+        "suspended": false,
         "roles": [
           {
             "id": 1,
             "name": "ROLE_USER"
           }
-        ]
+        ],
+        "createdAt": "2023-10-27T10:00:00",
+        "updatedAt": "2023-10-27T10:00:00"
       }
     }
     ```
@@ -128,6 +133,7 @@ The application will start on `http://localhost:8080`.
         "userId": 1,
         "username": "testuser",
         "email": "test@example.com",
+        "suspended": false,
         "roles": [
           {
             "id": 1,
@@ -137,7 +143,9 @@ The application will start on `http://localhost:8080`.
             "id": 3,
             "name": "ROLE_SUPER_ADMIN" // Only if superAdminSecretKey is provided and correct
           }
-        ]
+        ],
+        "createdAt": "2023-10-27T10:00:00",
+        "updatedAt": "2023-10-27T10:00:00"
       }
     }
     ```
@@ -157,6 +165,7 @@ The application will start on `http://localhost:8080`.
         "id": 1,
         "username": "testuser",
         "email": "test@example.com",
+        "suspended": false,
         "roles": [
           {
             "id": null, // Role ID might be null for dynamically added roles
@@ -166,12 +175,393 @@ The application will start on `http://localhost:8080`.
             "id": null, // Role ID might be null for dynamically added roles
             "name": "ROLE_SUPER_ADMIN" // Will be present if superAdminSecretKey was used and user is an admin
           }
-        ]
+        ],
+        "createdAt": "2023-10-27T10:00:00",
+        "updatedAt": "2023-10-27T10:00:00"
       }
     }
     ```
 
 **Note**: The `roles` array in the `/me` endpoint now reflects the roles present in the current session's JWT, including any dynamically assigned roles like `ROLE_SUPER_ADMIN`. For dynamically added roles, the `id` field will be `null` as it's not retrieved from the database.
+
+### User Management Endpoints
+
+### Base URL
+
+`http://localhost:8080/api/v1/users`
+
+All endpoints require `ROLE_SUPER_ADMIN` unless specified.
+
+### 1. Create Admin User
+
+*   **Endpoint**: `POST /admin`
+*   **Description**: Creates a new user with `ROLE_ADMIN`.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "username": "newadmin",
+      "email": "newadmin@example.com",
+      "password": "adminpassword"
+    }
+    ```
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Admin user created successfully",
+      "data": {
+        "id": 2,
+        "username": "newadmin",
+        "email": "newadmin@example.com",
+        "suspended": false,
+        "roles": [
+          {
+            "id": 2,
+            "name": "ROLE_ADMIN"
+          }
+        ],
+        "createdAt": "2023-10-27T10:00:00",
+        "updatedAt": "2023-10-27T10:00:00"
+      }
+    }
+    ```
+
+### 2. Get All Users
+
+*   **Endpoint**: `GET /`
+*   **Description**: Retrieves a list of all registered users.
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Users retrieved successfully",
+      "data": [
+        {
+          "id": 1,
+          "username": "testuser",
+          "email": "test@example.com",
+          "suspended": false,
+          "roles": [
+            {
+              "id": 1,
+              "name": "ROLE_USER"
+            }
+          ],
+          "createdAt": "2023-10-27T10:00:00",
+          "updatedAt": "2023-10-27T10:00:00"
+        },
+        {
+          "id": 2,
+          "username": "newadmin",
+          "email": "newadmin@example.com",
+          "suspended": false,
+          "roles": [
+            {
+              "id": 2,
+              "name": "ROLE_ADMIN"
+            }
+          ],
+          "createdAt": "2023-10-27T10:00:00",
+          "updatedAt": "2023-10-27T10:00:00"
+        }
+      ]
+    }
+    ```
+
+### 3. Suspend/Unsuspend User
+
+*   **Endpoint**: `PATCH /{userId}/suspend`
+*   **Description**: Suspends or unsuspends a user by their ID.
+*   **Path Parameters**:
+    *   `userId`: The ID of the user to suspend/unsuspend.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "suspended": true // or false
+    }
+    ```
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "User suspension status updated successfully",
+      "data": {
+        "id": 1,
+        "username": "testuser",
+        "email": "test@example.com",
+        "suspended": true,
+        "roles": [
+          {
+            "id": 1,
+            "name": "ROLE_USER"
+          }
+        ],
+        "createdAt": "2023-10-27T10:00:00",
+        "updatedAt": "2023-10-27T10:00:00"
+      }
+    }
+    ```
+
+### Tax Management Endpoints
+
+### Base URL
+
+`http://localhost:8080/api/v1/taxes`
+
+All endpoints require `ROLE_SUPER_ADMIN` unless specified.
+
+### 1. Create Tax
+
+*   **Endpoint**: `POST /`
+*   **Description**: Creates a new tax.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "name": "VAT",
+      "rate": 0.10
+    }
+    ```
+*   **Success Response (201 Created)**:
+    ```json
+    {
+      "success": true,
+      "message": "Tax created successfully",
+      "data": {
+        "id": 1,
+        "name": "VAT",
+        "rate": 0.10
+      }
+    }
+    ```
+
+### 2. Get All Taxes
+
+*   **Endpoint**: `GET /`
+*   **Description**: Retrieves a list of all taxes.
+*   **Access**: `ROLE_ADMIN`, `ROLE_SUPER_ADMIN`
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Taxes retrieved successfully",
+      "data": [
+        {
+          "id": 1,
+          "name": "VAT",
+          "rate": 0.10
+        }
+      ]
+    }
+    ```
+
+### 3. Get Tax by ID
+
+*   **Endpoint**: `GET /{id}`
+*   **Description**: Retrieves a single tax by its ID.
+*   **Access**: `ROLE_ADMIN`, `ROLE_SUPER_ADMIN`
+*   **Path Parameters**:
+    *   `id`: The ID of the tax to retrieve.
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Tax retrieved successfully",
+      "data": {
+        "id": 1,
+        "name": "VAT",
+        "rate": 0.10
+      }
+    }
+    ```
+
+### 4. Update Tax
+
+*   **Endpoint**: `PUT /{id}`
+*   **Description**: Updates an existing tax.
+*   **Path Parameters**:
+    *   `id`: The ID of the tax to update.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "name": "VAT_Updated",
+      "rate": 0.12
+    }
+    ```
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Tax updated successfully",
+      "data": {
+        "id": 1,
+        "name": "VAT_Updated",
+        "rate": 0.12
+      }
+    }
+    ```
+
+### 5. Delete Tax
+
+*   **Endpoint**: `DELETE /{id}`
+*   **Description**: Deletes a tax by its ID.
+*   **Path Parameters**:
+    *   `id`: The ID of the tax to delete.
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Tax deleted successfully",
+      "data": null
+    }
+    ```
+
+### Product Management Endpoints
+
+### Base URL
+
+`http://localhost:8080/api/v1/products`
+
+All endpoints require `ROLE_SUPER_ADMIN` unless specified.
+
+### 1. Create Product
+
+*   **Endpoint**: `POST /`
+*   **Description**: Creates a new product.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "name": "Laptop",
+      "price": 1200.00,
+      "taxIds": [1, 2] // Optional: Array of tax IDs to associate with the product
+    }
+    ```
+*   **Success Response (201 Created)**:
+    ```json
+    {
+      "success": true,
+      "message": "Product created successfully",
+      "data": {
+        "id": 1,
+        "name": "Laptop",
+        "price": 1200.00,
+        "taxes": [
+          {
+            "id": 1,
+            "name": "VAT",
+            "rate": 0.10
+          },
+          {
+            "id": 2,
+            "name": "Luxury Tax",
+            "rate": 0.05
+          }
+        ]
+      }
+    }
+    ```
+
+### 2. Get All Products
+
+*   **Endpoint**: `GET /`
+*   **Description**: Retrieves a list of all products.
+*   **Access**: `ROLE_ADMIN`, `ROLE_SUPER_ADMIN`, `ROLE_USER`
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Products retrieved successfully",
+      "data": [
+        {
+          "id": 1,
+          "name": "Laptop",
+          "price": 1200.00,
+          "taxes": [
+            {
+              "id": 1,
+              "name": "VAT",
+              "rate": 0.10
+            }
+          ]
+        }
+      ]
+    }
+    ```
+
+### 3. Get Product by ID
+
+*   **Endpoint**: `GET /{id}`
+*   **Description**: Retrieves a single product by its ID.
+*   **Access**: `ROLE_ADMIN`, `ROLE_SUPER_ADMIN`, `ROLE_USER`
+*   **Path Parameters**:
+    *   `id`: The ID of the product to retrieve.
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Product retrieved successfully",
+      "data": {
+        "id": 1,
+        "name": "Laptop",
+        "price": 1200.00,
+        "taxes": [
+          {
+            "id": 1,
+            "name": "VAT",
+            "rate": 0.10
+          }
+        ]
+      }
+    }
+    ```
+
+### 4. Update Product
+
+*   **Endpoint**: `PUT /{id}`
+*   **Description**: Updates an existing product.
+*   **Path Parameters**:
+    *   `id`: The ID of the product to update.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "name": "Gaming Laptop",
+      "price": 1500.00,
+      "taxIds": [1] // Optional: Update associated tax IDs
+    }
+    ```
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Product updated successfully",
+      "data": {
+        "id": 1,
+        "name": "Gaming Laptop",
+        "price": 1500.00,
+        "taxes": [
+          {
+            "id": 1,
+            "name": "VAT",
+            "rate": 0.10
+          }
+        ]
+      }
+    }
+    ```
+
+### 5. Delete Product
+
+*   **Endpoint**: `DELETE /{id}`
+*   **Description**: Deletes a product by its ID.
+*   **Path Parameters**:
+    *   `id`: The ID of the product to delete.
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Product deleted successfully",
+      "data": null
+    }
+    ```
 
 ## Authentication
 
